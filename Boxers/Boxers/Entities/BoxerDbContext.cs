@@ -18,15 +18,12 @@ namespace Boxers.Entities
 
             modelBuilder.Entity<Boxer>()
                .Property(x => x.Weight)
-               .IsRequired()
-               .HasMaxLength(3);
+               .IsRequired();
 
             modelBuilder.Entity<Boxer>()
                .Property(x => x.Wins)
-               .IsRequired()
-               .HasMaxLength(3);
-
-
+               .IsRequired();
+           
             modelBuilder.Entity<Trainer>()
                 .Property(r => r.FullName)
                 .IsRequired()

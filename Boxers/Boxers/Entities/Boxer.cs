@@ -1,9 +1,13 @@
-﻿namespace Boxers.Entities
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+
+namespace Boxers.Entities
 {
     public class Boxer
     {
         public int Id { get; set; }
-        public string? Name { get; set; }
+        public string Name { get; set; }
+        [Precision(3)]
         public int Weight { get; set; }
         public int Wins { get; set; }
         public int Losts { get; set; }

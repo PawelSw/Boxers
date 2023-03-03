@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Boxers.Entities;
 using Boxers.Models;
+using Boxers.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,47 +13,60 @@ namespace Boxers.Controllers
 
     public class BoxerController : ControllerBase
     {
-        private readonly BoxerDbContext _dbcontext;
-        private readonly IMapper _mapper;
 
+        private readonly IBoxerService _iboxerService;
 
-        public BoxerController(BoxerDbContext dbcontext, IMapper mapper)
+        public BoxerController(IBoxerService iboxerService)
         {
-            _dbcontext = dbcontext;  
-            _mapper = mapper;
+            _iboxerService = iboxerService;
         }
-
 
         [HttpGet]
         public ActionResult<IEnumerable<Boxer>> GetAll()
         {
-            var boxers = _dbcontext
-                .Boxers
-                .Include(x => x.Trainer)
-                .Include(x => x.Achievements)
-                .ToList();
-
-            var boxersDto = _mapper.Map<List<BoxerDto>>(boxers);
+            var boxersDto = _iboxerService.GetAll();
             return Ok(boxersDto);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<IEnumerable<Boxer>> GetById([FromRoute] int id)
+        public ActionResult<Boxer> GetById([FromRoute] int id)
         {
-            var boxer = _dbcontext
-                .Boxers
-                .Include(x => x.Trainer)
-                .Include(x => x.Achievements)
-                .FirstOrDefault(x => x.Id == id);
+            var boxer = _iboxerService.GetById(id);
 
             if (boxer == null)
             {
                 return NotFound();
             }
 
-            var boxerDto = _mapper.Map<BoxerDto>(boxer);
-            return Ok(boxerDto);          
+            return Ok(boxer);
         }
+
+        [HttpPost]
+        public ActionResult CreateBoxer([FromBody] CreateBoxerDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var id = _iboxerService.Create(dto);
+
+            return Created($"/boxer/{id}", null);
+
+        }
+
+        [HttpDelete("{id}")]
+        public ActionResult DeletById([FromRoute] int id)
+        {
+            var isDeleted = _iboxerService.DeleteById(id);
+            if (isDeleted )
+            {
+                return NoContent();
+            }
+           return NotFound();
+
+
+        }
+
 
         //[HttpPut("{id}")]
         //public ActionResult Update([FromBody] UpdateRestaurantDto dto, [FromRoute] int id)
@@ -73,13 +87,6 @@ namespace Boxers.Controllers
 
 
 
-        //[HttpGet("{id}")]
-        //[AllowAnonymous]
-        //public ActionResult<RestaurantDto> Get([FromRoute] int id)
-        //{
-        //    var restaurant = _restaurantService.GetById(id);
 
-        //    return Ok(restaurant);
-        //}
     }
 }

@@ -19,6 +19,9 @@ namespace Boxers
                 //.ForMember(m => m.Draws, c => c.MapFrom(s => s.Draws));
 
             CreateMap<Achievement, AchievementDto>();
+
+            CreateMap<CreateBoxerDto, Boxer>()
+             .ForMember(m => m.Trainer, c => c.MapFrom(dto => new Trainer { FullName = dto.Trainer}));
         }
     }
 }

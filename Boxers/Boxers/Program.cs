@@ -1,5 +1,6 @@
 using Boxers;
 using Boxers.Entities;
+using Boxers.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,8 @@ builder.Services.AddScoped<BoxerSeeder>();
 //builder.Services.AddAutoMapper(this.GetType().Assembly);
 
 builder.Services.AddAutoMapper(typeof(BoxerMappingProfile).Assembly);
+builder.Services.AddScoped<IBoxerService, BoxerService>();
+    
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
