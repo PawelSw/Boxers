@@ -13,7 +13,6 @@ namespace Boxers.Controllers
 
     public class BoxerController : ControllerBase
     {
-
         private readonly IBoxerService _iboxerService;
 
         public BoxerController(IBoxerService iboxerService)
@@ -37,7 +36,6 @@ namespace Boxers.Controllers
             {
                 return NotFound();
             }
-
             return Ok(boxer);
         }
 
@@ -51,11 +49,10 @@ namespace Boxers.Controllers
             var id = _iboxerService.Create(dto);
 
             return Created($"/boxer/{id}", null);
-
         }
 
         [HttpDelete("{id}")]
-        public ActionResult DeletById([FromRoute] int id)
+        public ActionResult DeleteById([FromRoute] int id)
         {
             var isDeleted = _iboxerService.DeleteById(id);
             if (isDeleted )
@@ -63,30 +60,20 @@ namespace Boxers.Controllers
                 return NoContent();
             }
            return NotFound();
-
-
         }
 
+        [HttpPut("{id}")]
+        public ActionResult Update([FromBody] UpdateBoxerDto dto, [FromRoute] int id)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-        //[HttpPut("{id}")]
-        //public ActionResult Update([FromBody] UpdateRestaurantDto dto, [FromRoute] int id)
-        //{
-
-        //    _restaurantService.Update(id, dto);
-
-        //    return Ok();
-        //}
-
-        //[HttpDelete("{id}")]
-        //public ActionResult Delete([FromRoute] int id)
-        //{
-        //    _restaurantService.Delete(id);
-
-        //    return NoContent();
-        //}
-
-
-
-
+            var isUpdated = _iboxerService.Update(dto, id);
+            if (!isUpdated )
+            {
+                return NotFound();
+            }
+            return Ok();
+        }
     }
 }

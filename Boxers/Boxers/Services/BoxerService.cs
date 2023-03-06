@@ -11,15 +11,18 @@ namespace Boxers.Services
         int Create(CreateBoxerDto dto);
         IEnumerable<BoxerDto> GetAll();
         bool DeleteById(int id);
+        bool Update(UpdateBoxerDto dto, int id);
     }
     public class BoxerService : IBoxerService
     {
         private readonly BoxerDbContext _dbContext;
         private readonly IMapper _mapper;
-        public BoxerService(BoxerDbContext dbContext, IMapper mapper) 
+        private readonly ILogger<BoxerService> _logger;
+        public BoxerService(BoxerDbContext dbContext, IMapper mapper, ILogger<BoxerService> logger) 
         {
             _dbContext = dbContext;        
             _mapper = mapper;
+            _logger = logger;
         }
         public BoxerDto GetById( int  id )
         {
@@ -60,14 +63,27 @@ namespace Boxers.Services
 
         public bool DeleteById ( int id )
         {
+            _logger.LogError($"Boxer with id: {id} DELETE action invoked");
             var boxer = _dbContext
                 .Boxers.FirstOrDefault(x => x.Id == id);
             if ( boxer == null ) return false;
             _dbContext.Boxers.Remove(boxer);
             _dbContext.SaveChanges();
             return true;
+        }
+        public bool Update(UpdateBoxerDto dto, int id)
+        {
+            var boxer = _dbContext
+                .Boxers.FirstOrDefault(x => x.Id == id);
+            if (boxer == null) return false;
 
+            boxer.Weight = dto.Weight;
+            boxer.Wins = dto.Wins;
+            boxer.Losts = dto.Losts;
 
+            _dbContext.SaveChanges();
+
+            return true;
         }
     }
 }
