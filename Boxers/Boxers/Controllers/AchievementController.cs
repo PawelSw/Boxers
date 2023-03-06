@@ -17,8 +17,28 @@ namespace Boxers.Controllers
         public ActionResult Post([FromRoute] int boxerId, [FromBody] CreateAchievementDto dto)
         {
             var newAchievementId = _achievementService.Create(boxerId, dto);
-            return Created($"api/{boxerId}/Achievement/{newAchievementId}",null);
+            return Created($"api/boxer/{boxerId}/Achievement/{newAchievementId}",null);
             
+        }
+        [HttpGet("{achievementId}")]
+        public ActionResult<AchievementDto> Get([FromRoute] int boxerId, [FromRoute] int achievementId)
+        {
+            AchievementDto achievement = _achievementService.GetById(boxerId, achievementId);
+            return Ok(achievement);
+        }
+
+        [HttpGet]
+        public ActionResult<List<AchievementDto>> GetAll([FromRoute] int boxerId)
+        {
+            List<AchievementDto> achievement = _achievementService.GetAll(boxerId);
+            return Ok(achievement);
+        }
+
+        [HttpDelete]
+        public ActionResult RemoveAll([FromRoute] int boxerId)
+        {
+            _achievementService.RemoveAllAchievements(boxerId);
+            return NoContent();
         }
 
     }

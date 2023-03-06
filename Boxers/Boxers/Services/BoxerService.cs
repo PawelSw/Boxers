@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Boxers.Entities;
+using Boxers.ErrorHandling;
 using Boxers.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,8 +32,8 @@ namespace Boxers.Services
                  .Include(x => x.Trainer)
                  .Include(x => x.Achievements)
                  .FirstOrDefault(x => x.Id == id);
-            
-            if ( boxer == null )  return null;
+
+            if (boxer == null) return null;
 
             var boxerDto = _mapper.Map<BoxerDto>(boxer);
             return boxerDto;
