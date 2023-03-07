@@ -31,11 +31,6 @@ namespace Boxers.Controllers
         public ActionResult<Boxer> GetById([FromRoute] int id)
         {
             var boxer = _iboxerService.GetById(id);
-
-            if (boxer == null)
-            {
-                return NotFound();
-            }
             return Ok(boxer);
         }
 

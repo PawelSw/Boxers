@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Boxers.Entities;
 using Boxers.Exceptions;
+using Boxers.Middleware;
 using Boxers.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,10 +21,12 @@ namespace Boxers.Services
     {
         private readonly BoxerDbContext _dbcontext;
         private readonly IMapper _mapper;
-        public AchievementService(BoxerDbContext dbcontext, IMapper mapper)
+        private readonly ILogger<AchievementService> _logger;
+        public AchievementService(BoxerDbContext dbcontext, IMapper mapper, ILogger<AchievementService> logger)
         {
             _dbcontext = dbcontext;
             _mapper = mapper;
+            _logger = logger;
 
         }
         public int Create(int boxerid, CreateAchievementDto dto)
@@ -38,23 +41,16 @@ namespace Boxers.Services
         public AchievementDto GetById(int boxerId, int achievementId)
         {
             var boxer = GetBoxerById(boxerId);
-            if (boxer == null) return null;
-
             var achievement = _dbcontext.Achievements.FirstOrDefault(x => x.Id == achievementId);
-            if (achievement == null || achievement.BoxerId != boxerId) return null;
+            if (achievement == null || achievement.BoxerId != boxerId) 
+                throw new NotFoundException("Achievement not found");
 
             var achievementDto = _mapper.Map<AchievementDto>(achievement);
             return achievementDto;
         }
         public List<AchievementDto> GetAll(int boxerId)
         {
-            //var boxer = _dbcontext
-            //    .Boxers
-            //    .Include(x => x.Achievements)
-            //    .FirstOrDefault(x => x.Id == boxerId);
-            var boxer = GetBoxerById(boxerId);
-            //if (boxer == null) return null;
-
+            var boxer = GetBoxerById(boxerId);   
             var achievementDto = _mapper.Map<List<AchievementDto>>(boxer.Achievements);
             return achievementDto;
         }
@@ -63,10 +59,8 @@ namespace Boxers.Services
         {
             var boxer = GetBoxerById(boxerId);
             _dbcontext.RemoveRange(boxer.Achievements);
-            _dbcontext.SaveChanges();
-         
+            _dbcontext.SaveChanges();         
         }
-
 
         private Boxer GetBoxerById(int boxerId)
         {
@@ -74,8 +68,8 @@ namespace Boxers.Services
               .Boxers
               .Include(x => x.Achievements)
               .FirstOrDefault(x => x.Id == boxerId);
-            if (boxer == null) return null;
-
+            if (boxer == null)
+                throw new NotFoundException("Boxer not found");
             return boxer;
         }
     }

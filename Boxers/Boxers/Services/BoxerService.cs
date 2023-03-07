@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Boxers.Entities;
 using Boxers.ErrorHandling;
+using Boxers.Exceptions;
 using Boxers.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,7 +34,8 @@ namespace Boxers.Services
                  .Include(x => x.Achievements)
                  .FirstOrDefault(x => x.Id == id);
 
-            if (boxer == null) return null;
+            if (boxer == null) 
+                throw new NotFoundException("Boxer not found");
 
             var boxerDto = _mapper.Map<BoxerDto>(boxer);
             return boxerDto;
@@ -46,9 +48,8 @@ namespace Boxers.Services
                  .Include(x => x.Achievements)
                  .ToList();
                  
-
-            if (boxer == null) return null;
-
+            if (boxer == null) 
+                throw new NotFoundException("Boxer not found");
             var boxersDto = _mapper.Map<List<BoxerDto>>(boxer);
             return boxersDto;
         }
@@ -59,7 +60,6 @@ namespace Boxers.Services
             _dbContext.Boxers.Add(boxer);
             _dbContext.SaveChanges();
             return boxer.Id;
-
         }
 
         public bool DeleteById ( int id )
@@ -67,7 +67,8 @@ namespace Boxers.Services
             _logger.LogError($"Boxer with id: {id} DELETE action invoked");
             var boxer = _dbContext
                 .Boxers.FirstOrDefault(x => x.Id == id);
-            if ( boxer == null ) return false;
+            if ( boxer == null )
+                throw new NotFoundException("Boxer not found");
             _dbContext.Boxers.Remove(boxer);
             _dbContext.SaveChanges();
             return true;
@@ -76,7 +77,8 @@ namespace Boxers.Services
         {
             var boxer = _dbContext
                 .Boxers.FirstOrDefault(x => x.Id == id);
-            if (boxer == null) return false;
+            if (boxer == null)
+                throw new NotFoundException("Boxer not found");
 
             boxer.Weight = dto.Weight;
             boxer.Wins = dto.Wins;
