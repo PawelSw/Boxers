@@ -1,0 +1,31 @@
+﻿using Boxers.Entities;
+using FluentValidation;
+using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
+
+namespace Boxers.Models.Validators
+{
+    public class RegisterUserDtoValidator : AbstractValidator<RegisterUserDto>
+    {
+        public RegisterUserDtoValidator(BoxerDbContext boxerDbContext)
+        {
+            RuleFor(x => x.Email)
+                .NotEmpty()
+                .EmailAddress();
+
+            RuleFor(x => x.Password)
+                .MinimumLength(6);
+            RuleFor(x => x.ConfirmPassword).Equal(x => x.Password);
+
+            RuleFor(x => x.Email)
+               .Custom((value, context) =>
+               {
+                   var emailInUse = boxerDbContext.Users.Any(u => u.Email == value);
+                   if (emailInUse)
+                   {
+                       context.AddFailure("Email", "That email is already in use.");
+                   }
+               });
+        }
+    }
+}

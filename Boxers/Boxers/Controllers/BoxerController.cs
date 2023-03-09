@@ -21,6 +21,7 @@ namespace Boxers.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public ActionResult<IEnumerable<Boxer>> GetAll()
         {
             var boxersDto = _iboxerService.GetAll();

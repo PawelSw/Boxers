@@ -15,6 +15,13 @@ using Boxers.Entities;
 using Boxers.Middleware;
 using Boxers.Services;
 using Boxers.Middleware;
+using Microsoft.AspNetCore.Identity;
+using Boxers.Models;
+using Boxers.Models.Validators;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Boxers
 {
@@ -30,14 +37,38 @@ namespace Boxers
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var authenticationSettings = new AuthenticationSettings();
 
-            services.AddControllers();
+            Configuration.GetSection("Authentication").Bind(authenticationSettings);
+
+            services.AddSingleton(authenticationSettings);
+       
+            services.AddAuthentication(option =>
+            {
+                option.DefaultAuthenticateScheme = "Bearer";
+                option.DefaultScheme = "Bearer";
+                option.DefaultChallengeScheme = "Bearer";
+            }).AddJwtBearer(cfg =>
+            {
+                cfg.RequireHttpsMetadata = false;
+                cfg.SaveToken = true;
+                cfg.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidIssuer = authenticationSettings.JwtIssuer,
+                    ValidAudience = authenticationSettings.JwtIssuer,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationSettings.JwtKey)),
+                };
+            });
+            services.AddControllers().AddFluentValidation();
             services.AddDbContext<BoxerDbContext>();
             services.AddScoped<BoxerSeeder>();
             services.AddAutoMapper(this.GetType().Assembly);
             services.AddScoped<IBoxerService, BoxerService>();
             services.AddScoped<IAchievementService, AchievementService>();
+            services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<ErrorHandlingMiddleware>();
+            services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+            services.AddScoped<IValidator<RegisterUserDto>, RegisterUserDtoValidator>();
             //services.AddScoped<RequestTimeMiddleware>();
             services.AddSwaggerGen();
         }
@@ -52,15 +83,17 @@ namespace Boxers
             }
 
             app.UseMiddleware<ErrorHandlingMiddleware>();
+            app.UseAuthentication();
             app.UseHttpsRedirection();
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Restaurant API");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Boxers API");
             });
 
             app.UseRouting();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
