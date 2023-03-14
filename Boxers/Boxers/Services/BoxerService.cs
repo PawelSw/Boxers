@@ -11,7 +11,7 @@ namespace Boxers.Services
     {
         BoxerDto GetById(int id);
         int Create(CreateBoxerDto dto);
-        IEnumerable<BoxerDto> GetAll();
+        IEnumerable<BoxerDto> GetAll(string searchPhrase);
         bool DeleteById(int id);
         bool Update(UpdateBoxerDto dto, int id);
     }
@@ -40,15 +40,16 @@ namespace Boxers.Services
             var boxerDto = _mapper.Map<BoxerDto>(boxer);
             return boxerDto;
         }
-        public IEnumerable<BoxerDto> GetAll()
+        public IEnumerable<BoxerDto> GetAll(string searchPhrase)
         {
             var boxer = _dbContext
                  .Boxers
                  .Include(x => x.Trainer)
                  .Include(x => x.Achievements)
+                 .Where(x => searchPhrase == null || (x.Name.ToLower().Contains(searchPhrase.ToLower())))
                  .ToList();
-                 
-            if (boxer == null) 
+
+            if (boxer == null)
                 throw new NotFoundException("Boxer not found");
             var boxersDto = _mapper.Map<List<BoxerDto>>(boxer);
             return boxersDto;

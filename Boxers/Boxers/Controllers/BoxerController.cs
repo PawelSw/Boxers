@@ -21,14 +21,16 @@ namespace Boxers.Controllers
         }
 
         [HttpGet]
-        [Authorize]
-        public ActionResult<IEnumerable<Boxer>> GetAll()
+        //[Authorize(Policy = "Atleast18")]
+        //[AllowAnonymous]
+        public ActionResult<IEnumerable<BoxerDto>> GetAll([FromQuery] string? searchPhrase)
         {
-            var boxersDto = _iboxerService.GetAll();
+            var boxersDto = _iboxerService.GetAll(searchPhrase);
             return Ok(boxersDto);
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = "HasNationality")]
         public ActionResult<Boxer> GetById([FromRoute] int id)
         {
             var boxer = _iboxerService.GetById(id);
@@ -36,6 +38,7 @@ namespace Boxers.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin, Manager")]
         public ActionResult CreateBoxer([FromBody] CreateBoxerDto dto)
         {
             if (!ModelState.IsValid)
